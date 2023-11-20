@@ -1,0 +1,25 @@
+50 60 25
+3 2 7 6
+7 5 2 3
+2 5 4 5
+60 40 20 15
+
+North West Corner Method:[50, 10, 40, 10, 10, 15]
+Vogel's Approximation Method:[40, 10, 25, 25, 15, 20]
+Russel's Approximation Method:[25, 35, 15, 20, 40]
+
+7 9 18
+19 30 50 10
+70 30 40 60
+40 8 70 20
+5 8 7 14
+
+North West Corner Method:[5, 2, 6, 3, 4, 14]
+Vogel's Approximation Method:[8, 5, 10, 2, 2, 7]
+Russel's Approximation Method:[7, 7, 7, 2, 3, 8] - INCORRECT
+
+300 400 500
+3 1 7 4
+2 6 5 9
+8 3 3 2
+250 350 400 200

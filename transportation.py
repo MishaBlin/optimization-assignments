@@ -1,55 +1,67 @@
 import numpy as np
 
 
-def VogellsApproximation(matrix: list, supply: list, demand: list, n: int, m: int):
-    cost_matrix = np.array(matrix)
+def findDiff(matrix: list, n: int, m: int) -> tuple:
+    row_diff = []
+    col_diff = []
+    for i in range(n):
+        row = matrix[i][:]
+        row.sort()
+        if row[1] == 10**3 and row[0] != 10**3:
+            row_diff.append(row[0])
+            continue
+        row_diff.append(row[1] - row[0])
+    col = 0
+    while col < m:
+        column = []
+        for i in range(n):
+            column.append(matrix[i][col])
+        column.sort()
+        if column[1] == 10**3 and column[0] != 10**3:
+            col_diff.append(column[0])
+            col += 1
+            continue
+        col_diff.append(column[1] - column[0])
+        col += 1
+    return row_diff, col_diff
+
+
+def findMaxDiff(row: list, col: list):
+    max_row = max(row)
+    max_col = max(col)
+    max_row_index = row.index(max_row)
+    max_col_index = col.index(max_col)
+    return max_row, max_row_index, max_col, max_col_index
+
+
+def VogelsApproximation(cost_matrix: list, supply: list, demand: list, n: int, m: int):
     result = []
 
-    penalty_row = np.array([0] * n)
-    penalty_col = np.array([0] * m)
-
     while sum(supply) > 0 and sum(demand) > 0:
-        for i in range(n):
-            sorted_row = sorted(cost_matrix[i])
-            penalty_row[i] = sorted_row[1] - sorted_row[0]
+        penalty_row, penalty_col = findDiff(cost_matrix, n, m)
+        maxr, maxr_index, maxc, maxc_index = findMaxDiff(penalty_row, penalty_col)
 
-        for j in range(m):
-            sorted_column = sorted(cost_matrix[:, j])
-            penalty_col[j] = sorted_column[1] - sorted_column[0]
+        if maxr >= maxc:
+            min_cell = min(cost_matrix[maxr_index])
+            min_cell_i = maxr_index
+            min_cell_j = cost_matrix[maxr_index].index(min_cell)
+        else:
+            col = [row[maxc_index] for row in cost_matrix]
+            min_cell = min(col)
+            min_cell_i = col.index(min_cell)
+            min_cell_j = maxc_index
 
-        max_cell_row = 0
-        for i in range(n):
-            if penalty_row[i] > penalty_row[max_cell_row]:
-                max_cell_row = i
-        max_cell_col = 0
-        for j in range(m):
-            if penalty_col[j] > penalty_col[max_cell_col]:
-                max_cell_col = j
-        min_i, min_j = max_cell_row, max_cell_col
-        if penalty_row[max_cell_row] >= penalty_col[max_cell_col]:
-            min_cost = float("inf")
-            for i in range(m):
-                if cost_matrix[max_cell_row][i] <= min_cost:
-                    min_j = i
-                    min_cost = cost_matrix[max_cell_row][i]
+        if demand[min_cell_j] >= supply[min_cell_i]:
+            result.append(supply[min_cell_i])
+            demand[min_cell_j] -= supply[min_cell_i]
+            supply[min_cell_i] = 0
+            cost_matrix[min_cell_i] = [10**3 for i in range(m)]
         else:
-            min_cost = float("inf")
-            col = cost_matrix[:, max_cell_col]
+            result.append(demand[min_cell_j])
+            supply[min_cell_i] -= demand[min_cell_j]
+            demand[min_cell_j] = 0
             for i in range(n):
-                if col[i] <= min_cost:
-                    min_i = i
-                    min_cost = cost_matrix[i][max_cell_col]
-        if demand[min_j] >= supply[min_i]:
-            demand[min_j] -= supply[min_i]
-            result.append(supply[min_i])
-            supply[min_i] = 0
-            cost_matrix[min_i] = [100000] * m
-        else:
-            supply[min_i] -= demand[min_j]
-            result.append(demand[min_j])
-            demand[min_j] = 0
-            for i in range(n):
-                cost_matrix[i][min_j] = 100000
+                cost_matrix[i][min_cell_j] = 10**3
     return result
 
 
@@ -74,7 +86,7 @@ def NorthWestCornerMethod(supply, matrix, demand):
     return result
 
 
-def RusselApproximationMethod(supply, matrix, demand):
+def RussellsApproximationMethod(supply, matrix, demand):
     result = []
     n = len(supply)
     m = len(demand)
@@ -136,14 +148,28 @@ if sum(supply) != sum(demand):
     print("The problem is not balanced!")
     exit(0)
 
+
+print("-" * 30)
+print("Table:")
+print("-" * 30)
 for i in range(len(supply)):
-    print(" ".join(map(str, (matrix[i] + [supply[i]]))))
-print(" ".join(map(str, demand)) + " -")
+    row = matrix[i] + [supply[i]]
+    row_str = " ".join(f"{val:5}" for val in row)
+    print(row_str)
+demand_str = " ".join(f"{val:5}" for val in demand)
+print(demand_str + f" {sum(supply):5}")
+print("-" * 30)
 
 north_west_result = NorthWestCornerMethod(supply.copy(), matrix.copy(), demand.copy())
-print(north_west_result)
+print("North West Corner Method:" + str(north_west_result))
 
-russel_approximation_method = RusselApproximationMethod(
+vogel_approximation_result = VogelsApproximation(
+    matrix.copy(), supply.copy(), demand.copy(), len(supply), len(demand)
+)
+print("Vogel's Approximation Method:" + str(vogel_approximation_result))
+
+
+russells_approximation_result = RussellsApproximationMethod(
     supply.copy(), matrix.copy(), demand.copy()
 )
-print(russel_approximation_method)
+print("Russel's Approximation Method:" + str(russells_approximation_result))
