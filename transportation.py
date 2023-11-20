@@ -1,4 +1,4 @@
-import numpy as np
+import copy
 
 
 def findDiff(matrix: list, n: int, m: int) -> tuple:
@@ -65,7 +65,7 @@ def VogelsApproximation(cost_matrix: list, supply: list, demand: list, n: int, m
     return result
 
 
-def NorthWestCornerMethod(supply, matrix, demand):
+def NorthWestCornerMethod(supply, demand):
     result = []
     n = len(supply)
     m = len(demand)
@@ -94,10 +94,14 @@ def RussellsApproximationMethod(supply, matrix, demand):
         rows_max = [-1] * n
         columns_max = [-1] * m
         for i in range(n):
-            rows_max[i] = max(matrix[i])
+            rows_max[i] = -1
+            for j in range(m):
+                if demand[j] != 0:
+                    rows_max[i] = max(rows_max[i], matrix[i][j])
         for j in range(m):
             for i in range(n):
-                columns_max[j] = max(columns_max[j], matrix[i][j])
+                if supply[i] != 0:
+                    columns_max[j] = max(columns_max[j], matrix[i][j])
         delta_i, delta_j = -1, -1
         delta = -1
         for i in range(n):
@@ -160,16 +164,21 @@ demand_str = " ".join(f"{val:5}" for val in demand)
 print(demand_str + f" {sum(supply):5}")
 print("-" * 30)
 
-north_west_result = NorthWestCornerMethod(supply.copy(), matrix.copy(), demand.copy())
+n = len(supply)
+m = len(demand)
+
+supply_copy = supply.copy()
+demand_copy = demand.copy()
+north_west_result = NorthWestCornerMethod(copy.deepcopy(supply), copy.deepcopy(demand))
 print("North West Corner Method:" + str(north_west_result))
 
+
 vogel_approximation_result = VogelsApproximation(
-    matrix.copy(), supply.copy(), demand.copy(), len(supply), len(demand)
+    copy.deepcopy(matrix), copy.deepcopy(supply), copy.deepcopy(demand), n, m
 )
 print("Vogel's Approximation Method:" + str(vogel_approximation_result))
 
-
 russells_approximation_result = RussellsApproximationMethod(
-    supply.copy(), matrix.copy(), demand.copy()
+    copy.deepcopy(supply), copy.deepcopy(matrix), copy.deepcopy(demand)
 )
 print("Russel's Approximation Method:" + str(russells_approximation_result))
